@@ -1,4 +1,3 @@
 servers:
   - https://test-ci-cd-oonk9.ondigitalocean.app/
   - https://qa.cedarlogistics.app/web/login/
-  - https://login.cedarlogistics.app/web/login
