@@ -1,2 +1,5 @@
 servers:
   - https://test-ci-cd-oonk9.ondigitalocean.app/
+  - https://qa.cedarlogistics.app/web/login/
+  - https://app.inbayt.com/en/auth/login
+  - https://login.cedarlogistics.app/web/login

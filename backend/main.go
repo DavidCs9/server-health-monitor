@@ -24,6 +24,20 @@ var (
 	mu           sync.Mutex
 )
 
+// Middleware to handle CORS headers
+func enableCORS(w http.ResponseWriter, r *http.Request) {
+	// Set the CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Allow your frontend's origin
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	// If the request is a preflight OPTIONS request, respond with status OK
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+}
+
 func loadConfig(filePath string) Config {
 	var config Config
 	data, err := os.ReadFile(filePath)
@@ -194,6 +208,15 @@ func main() {
 
 	// setup http routes using gorilla/mux
 	r := mux.NewRouter()
+
+	// Apply CORS middleware for all routes
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			enableCORS(w, r) // Add CORS headers
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	r.HandleFunc("/health", getHealthHandler).Methods("GET")
 	r.HandleFunc("/", getHome)
 	r.HandleFunc("/health-one-server", getHealthFromOneServer).Methods("GET")
