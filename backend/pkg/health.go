@@ -26,8 +26,6 @@ func CheckServer(url string) ServerStatus {
 
 	if err != nil {
 		log.Printf("Failed to check URL %s: %v", url, err)
-	} else {
-		log.Printf("Checked URL %s, Status: %d, Latency: %s", url, resp.StatusCode, latency)
 	}
 
 	return ServerStatus{
@@ -64,8 +62,6 @@ func CheckServerWithTimeout(url string, timeout time.Duration) ServerStatus {
 
 	if err != nil {
 		log.Printf("Failed to check URL %s: %v", url, err)
-	} else {
-		log.Printf("Checked URL %s, Status: %d, Latency: %s", url, resp.StatusCode, latency)
 	}
 
 	return ServerStatus{

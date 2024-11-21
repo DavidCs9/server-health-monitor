@@ -78,26 +78,62 @@ func getHealthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("ServerStatus before encoding: %+v", serverStatus)
-
 	err := json.NewEncoder(w).Encode(serverStatus)
 	if err != nil {
 		http.Error(w, "Failed to encode serverStatus", http.StatusInternalServerError)
 		log.Printf("Failed to encode serverStatus: %v", err)
 		return
 	}
-
-	log.Println("Successfully responded with serverStatus.")
 }
 
 func getHome(w http.ResponseWriter, r *http.Request) {
-	// Define response as a map
-	response := map[string]bool{"success": true}
+	// Set Content-Type header to text/html
+	w.Header().Set("Content-Type", "text/html")
 
-	w.Header().Set("Content-Type", "application/json")
-	// Encode response as JSON with error handling
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// Define the HTML response
+	htmlResponse := `
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Server Status</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #e0f7fa;
+				color: #333;
+				text-align: center;
+				padding: 50px;
+			}
+			.status-box {
+				display: inline-block;
+				padding: 20px;
+				border: 2px dashed #66bb6a;
+				border-radius: 10px;
+				background-color: #ffffff;
+			}
+			h1 {
+				color: #66bb6a;
+			}
+			p {
+				font-size: 1.2em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="status-box">
+			<h1>The Server is Up and Running! 🚀</h1>
+			<p>Everything is working as expected. 🎉</p>
+		</div>
+	</body>
+	</html>
+	`
+
+	// Write the HTML response to the ResponseWriter
+	_, err := w.Write([]byte(htmlResponse))
+	if err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 	}
 }
 
