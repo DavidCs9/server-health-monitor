@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"server-health-monitor/db"
 	health "server-health-monitor/pkg"
 	"sync"
 	"time"
@@ -19,7 +20,7 @@ type Config struct {
 }
 
 var (
-	serverStatus []health.ServerStatus
+	serverStatus []db.ServerStatus
 	mu           sync.Mutex
 )
 
@@ -39,7 +40,7 @@ func loadConfig(filePath string) Config {
 }
 
 func monitorServers(servers []string) {
-	statusChannel := make(chan health.ServerStatus, len(servers))
+	statusChannel := make(chan db.ServerStatus, len(servers))
 	var wg sync.WaitGroup
 
 	for _, server := range servers {
@@ -47,6 +48,10 @@ func monitorServers(servers []string) {
 		go func(server string) {
 			defer wg.Done()
 			status := health.CheckServerWithTimeout(server, 500*time.Millisecond)
+			err := db.InsertServerStatus(status)
+			if err != nil {
+				log.Printf("Failed to insert server status: %v", err)
+			}
 			statusChannel <- status
 		}(server)
 	}
@@ -56,7 +61,7 @@ func monitorServers(servers []string) {
 		close(statusChannel)
 	}()
 
-	var statuses []health.ServerStatus
+	var statuses []db.ServerStatus
 	for status := range statusChannel {
 		statuses = append(statuses, status)
 	}
@@ -137,8 +142,45 @@ func getHome(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getHealthFromOneServer(w http.ResponseWriter, r *http.Request) {
+	// Extract the 'url' query parameter
+	serverURL := r.URL.Query().Get("url")
+	if serverURL == "" {
+		http.Error(w, "Missing 'url' query parameter", http.StatusBadRequest)
+		return
+	}
+
+	// URL encode the query parameter to ensure proper formatting for MongoDB query
+	// encodedURL := url.QueryEscape(serverURL)
+	log.Printf("Querying health data for server_url: %s", serverURL)
+
+	healthData, err := db.GetServerHealth(serverURL)
+	if err != nil {
+		http.Error(w, "Failed to retrieve health data", http.StatusInternalServerError)
+		log.Printf("Failed to retrieve health data: %v", err)
+		return
+	}
+	if len(healthData) == 0 {
+		http.Error(w, "No data found for the specified server URL", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	log.Printf("Health data length: %d", len(healthData))
+	err = json.NewEncoder(w).Encode(healthData)
+	if err != nil {
+		http.Error(w, "Failed to encode health data", http.StatusInternalServerError)
+		log.Printf("Failed to encode health data: %v", err)
+		return
+	}
+}
+
 func main() {
 	config := loadConfig("servers.yaml")
+	err := db.Connect()
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
 
 	// Perform an initial health check
 	monitorServers(config.Servers)
@@ -154,6 +196,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/health", getHealthHandler).Methods("GET")
 	r.HandleFunc("/", getHome)
+	r.HandleFunc("/health-one-server", getHealthFromOneServer).Methods("GET")
 
 	// start http server
 	log.Println("Server is running on http://localhost:8080")

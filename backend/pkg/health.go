@@ -4,16 +4,11 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"server-health-monitor/db"
 	"time"
 )
 
-type ServerStatus struct {
-	URL     string `json:"url"`
-	Latency string `json:"latency"` // Convert time.Duration to string for JSON
-	IsUp    bool   `json:"is_up"`
-}
-
-func CheckServer(url string) ServerStatus {
+func CheckServer(url string) db.ServerStatus {
 	start := time.Now()
 	resp, err := http.Get(url)
 	latency := time.Since(start)
@@ -28,14 +23,15 @@ func CheckServer(url string) ServerStatus {
 		log.Printf("Failed to check URL %s: %v", url, err)
 	}
 
-	return ServerStatus{
-		URL:     url,
-		Latency: latency.String(),
-		IsUp:    isUp,
+	return db.ServerStatus{
+		ServerURL: url,
+		Latency:   latency,
+		IsUp:      isUp,
+		Timestamp: time.Now(),
 	}
 }
 
-func CheckServerWithTimeout(url string, timeout time.Duration) ServerStatus {
+func CheckServerWithTimeout(url string, timeout time.Duration) db.ServerStatus {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -43,10 +39,11 @@ func CheckServerWithTimeout(url string, timeout time.Duration) ServerStatus {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		log.Printf("Failed to create request for URL %s: %v", url, err)
-		return ServerStatus{
-			URL:     url,
-			Latency: "0s",
-			IsUp:    false,
+		return db.ServerStatus{
+			ServerURL: url,
+			Latency:   timeout,
+			IsUp:      false,
+			Timestamp: time.Now(),
 		}
 	}
 
@@ -64,9 +61,10 @@ func CheckServerWithTimeout(url string, timeout time.Duration) ServerStatus {
 		log.Printf("Failed to check URL %s: %v", url, err)
 	}
 
-	return ServerStatus{
-		URL:     url,
-		Latency: latency.String(),
-		IsUp:    isUp,
+	return db.ServerStatus{
+		ServerURL: url,
+		Latency:   latency,
+		IsUp:      isUp,
+		Timestamp: time.Now(),
 	}
 }
