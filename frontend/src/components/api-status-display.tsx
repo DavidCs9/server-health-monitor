@@ -23,8 +23,8 @@ export default function ApiStatusDisplay() {
 
       const data = await response.json();
       data.sort((a: ApiData, b: ApiData) => {
-        return b.latency - a.latency;
-      }); // Sort by latency descending
+        return a.server_url > b.server_url ? 1 : -1;
+      });
       setApiData(data);
       setIsLoading(false);
       setError(null);
