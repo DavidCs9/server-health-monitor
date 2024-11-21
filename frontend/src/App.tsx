@@ -9,7 +9,7 @@ function App() {
       <ApiStatusDisplay />
       <footer>
         <p className="text-gray-400 text-sm">
-          Made with ❤️ by
+          Made with 💜 by
           <a
             href="https://www.linkedin.com/in/davidcastrosiq/"
             target="_blank"
