@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,7 +19,16 @@ var client *mongo.Client
 // Connect initializes the MongoDB client
 func Connect() error {
 	var err error
-	client, err = mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb+srv://davidcastro:Test123.@cluster0.ql7iv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	// Retrieve MongoDB URI from environment variable
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		return fmt.Errorf("MONGO_URI environment variable is not set")
+	}
+	client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		return fmt.Errorf("failed to connect to MongoDB: %v", err)
 	}
