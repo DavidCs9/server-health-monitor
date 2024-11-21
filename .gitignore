@@ -1,0 +1,91 @@
+# Go backend ignore rules
+
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Output of build process
+*.out
+
+# Temporary files
+*.tmp
+*.log
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+
+# Dependency directories
+vendor/
+
+# Build artifacts and cache
+bin/
+build/
+dist/
+*.o
+*.a
+
+# Go module files
+/go.sum
+/go.mod
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Test-related files
+*.test
+*.cover
+
+# Generated files
+gen/
+
+# Secrets or environment files (example)
+.env
+.env.*
+*.key
+*.crt
+
+# Docker-related files (optional, depending on your usage)
+docker-compose.override.yml
+.env.docker
+
+
+# React + Vite frontend ignore rules
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Temporary files
+*.log
+*.tmp
+
+# Environment variables
+.env
+.env.*
+
+# IDE and editor specific files (shared with backend)
+.vscode/
+.idea/
+
+# Cache files
+*.cache
+*.eslintcache
+
+# Optional Vite-specific files
+*.gz    # gzip files
+*.br    # Brotli files
+
+# OS-specific files (shared with backend)
+.DS_Store
+Thumbs.db
+
+# Generated lock files (optional, adjust based on project needs)
+yarn.lock
+pnpm-lock.yaml
